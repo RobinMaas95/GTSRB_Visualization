@@ -15,7 +15,6 @@ import argparse
 import os
 import sys
 import warnings
-from itertools import combinations
 from pathlib import Path
 
 CURRENT = os.path.dirname(os.path.abspath(__file__))
@@ -23,21 +22,20 @@ sys.path.append(str(Path(CURRENT).joinpath("pytorch_cnn_visualizations", "src"))
 
 import numpy as np
 import torch
+from matplotlib import pyplot as plt
 from PIL import Image
-
-from model import LitModel
-from SmoothGradCAMplusplus.cam import SmoothGradCAMpp, GradCAM
-from SmoothGradCAMplusplus.utils.visualize import reverse_normalize, visualize
-from torchvision import transforms
-from torchvision.utils import save_image
-from torch.nn import functional as F
 from skimage.color import rgb2gray
 from skimage.io import imsave
-from nn_interpretability.interpretation.saliency_map.saliency_map import SaliencyMap
-from nn_interpretability.interpretation.am.general_am import ActivationMaximization
-
-import matplotlib.pyplot as plt
+from torch.nn import functional as F
+from torchvision import transforms
+from torchvision.utils import save_image
 from tqdm import tqdm
+
+from model import LitModel
+from nn_interpretability.interpretation.am.general_am import ActivationMaximization
+from nn_interpretability.interpretation.saliency_map.saliency_map import SaliencyMap
+from SmoothGradCAMplusplus.cam import GradCAM, SmoothGradCAMpp
+from SmoothGradCAMplusplus.utils.visualize import reverse_normalize, visualize
 
 
 def parse_args(vis_list):
@@ -108,9 +106,7 @@ def parse_args(vis_list):
         metavar="Mean",
         dest="mean",
         type=list,
-        default=[
-            0.3121227400108073, 0.28787920805165235, 0.2983359377199073
-        ],
+        default=[0.3121227400108073, 0.28787920805165235, 0.2983359377199073],
         help="Mean Values for normalization (List with three values)",
     )
 
@@ -119,9 +115,7 @@ def parse_args(vis_list):
         metavar="std",
         dest="std",
         type=list,
-        default=[
-            0.2788638916341836, 0.2672319741766035, 0.2756277781233763
-        ],
+        default=[0.2788638916341836, 0.2672319741766035, 0.2756277781233763],
         help="Std Values for normalization (List with three values)",
     )
 
@@ -139,7 +133,7 @@ def parse_args(vis_list):
     return args
 
 
-def get_algo_combinations(algos:list) -> str:
+def get_algo_combinations(algos: list) -> str:
     """
     Creates String with all possible combinations of the implemented visualization algorithms
 
@@ -169,7 +163,7 @@ def get_algo_combinations(algos:list) -> str:
     return subsets_str
 
 
-def prep_image(org_image:str, mean:list, std:list):
+def prep_image(org_image: str, mean: list, std: list) -> torch.Tensor:
     """
     Prepares image. This includes the normalization and the transformation into a tensor
 
@@ -193,11 +187,38 @@ def prep_image(org_image:str, mean:list, std:list):
 
     tensor = preprocess(ex_image)
     prep_img = tensor.unsqueeze(0)
-    print(type(prep_img))
     return prep_img
 
 
-def activation_maximation(model:LitModel, target_class:int, org_image, dest, mean, std, device):
+def activation_maximation(
+    model: LitModel,
+    target_class: str,
+    org_image: torch.Tensor,
+    dest: str,
+    mean: list,
+    std: list,
+    device: str,
+) -> None:
+    """
+    Performs activation maximation for the passed class
+
+    Parameters
+    ----------
+    model : LitModel
+        Model for activation maximation
+    target_class : str
+        Target class
+    org_image : torch.Tensor
+        Mean image of dataset
+    dest : str
+        Path to destination folder
+    mean : list
+        Mean values for all three channels of the train dataset
+    std : list
+        Mean values for all three channels of the train dataset
+    device : str
+        Device that should be used ('cpu'/'cuda')
+    """
     # Params
     img_shape = (3, 48, 48)
     lr = 0.001
@@ -248,7 +269,35 @@ def activation_maximation(model:LitModel, target_class:int, org_image, dest, mea
     plt.imsave(f"{image_dest}.ppm", image_restored.numpy())
 
 
-def saliance_map(model, _, org_image, dest, mean, std, device):
+def salience_map(
+    model: LitModel,
+    _,
+    org_image: torch.tensor,
+    dest: str,
+    mean: list,
+    std: list,
+    device: str,
+) -> None:
+    """
+    Performs saliency map
+
+    Parameters
+    ----------
+    model : LitModel
+        Model for activation maximation
+    target_class : _
+        Not needed
+    org_image : torch.Tensor
+        Mean image of dataset
+    dest : str
+        Path to destination folder
+    mean : list
+        Mean values for all three channels of the train dataset
+    std : list
+        Mean values for all three channels of the train dataset
+    device : str
+        Device that should be used ('cpu'/'cuda')
+    """
     # Prep image
     prep_img = prep_image(org_image, mean, std)
     prep_img = prep_img.to(device)
@@ -269,7 +318,35 @@ def saliance_map(model, _, org_image, dest, mean, std, device):
     plt.imsave(str(image_dest), endpoint.cpu().squeeze(0), cmap="gray")
 
 
-def grad_cam(model, _, org_image, dest, mean, std, device):
+def grad_cam(
+    model: LitModel,
+    _,
+    org_image: torch.tensor,
+    dest: str,
+    mean: list,
+    std: list,
+    device: str,
+) -> None:
+    """
+    Performs GradCam
+
+    Parameters
+    ----------
+    model : LitModel
+        Model for activation maximation
+    target_class : _
+        Not needed
+    org_image : torch.Tensor
+        Mean image of dataset
+    dest : str
+        Path to destination folder
+    mean : list
+        Mean values for all three channels of the train dataset
+    std : list
+        Mean values for all three channels of the train dataset
+    device : str
+        Device that should be used ('cpu'/'cuda')
+    """
     # Prep image
     prep_img = prep_image(org_image, mean, std)
     prep_img = prep_img.to(device)
@@ -304,7 +381,35 @@ def grad_cam(model, _, org_image, dest, mean, std, device):
     save_image(heatmap, str(image_dest))
 
 
-def grad_cam_plus_plus(model, _, org_image, dest, mean, std, device):
+def grad_cam_plus_plus(
+    model: LitModel,
+    _,
+    org_image: torch.tensor,
+    dest: str,
+    mean: list,
+    std: list,
+    device: str,
+) -> None:
+    """
+    Performs GradCam++
+
+    Parameters
+    ----------
+    model : LitModel
+        Model for activation maximation
+    target_class : _
+        Not needed
+    org_image : torch.Tensor
+        Mean image of dataset
+    dest : str
+        Path to destination folder
+    mean : list
+        Mean values for all three channels of the train dataset
+    std : list
+        Mean values for all three channels of the train dataset
+    device : str
+        Device that should be used ('cpu'/'cuda')
+    """
     # Prep image
     prep_img = prep_image(org_image, mean, std)
     prep_img = prep_img.to(device)
@@ -341,7 +446,22 @@ def grad_cam_plus_plus(model, _, org_image, dest, mean, std, device):
     save_image(heatmap, str(image_dest))
 
 
-def generate_mean_image(images, device):
+def generate_mean_image(images: list, device: str) -> torch.tensor:
+    """
+    Generates mean images based on passed images
+
+    Parameters
+    ----------
+    images : list
+        List with image paths
+    device : str
+        'cpu' or 'cuda'
+
+    Returns
+    -------
+    torch.tensor
+        Mean image
+    """
     image_sum = torch.zeros(images[0].size())
 
     for image in images:
@@ -354,8 +474,27 @@ def generate_mean_image(images, device):
 
 
 def main(args, vis_to_function, device):
+    """
+    Calls visualization method
+
+    Parameters
+    ----------
+    args : argparse.namespace
+        Namespace with argumetns
+    vis_to_function : str
+        Target visualization method
+    device : str
+        'cpu' or 'cuda'
+    """
+
     # Load model
-    model = LitModel.load_from_checkpoint(args.model, mean=args.mean, std = args.std, train_dataset=None, test_dataset=args.src)
+    model = LitModel.load_from_checkpoint(
+        args.model,
+        mean=args.mean,
+        std=args.std,
+        train_dataset=None,
+        test_dataset=args.src,
+    )
     model.to(device)
     model.eval()
 
@@ -413,10 +552,9 @@ if __name__ == "__main__":
     vis_to_function = {
         "GradCam": "grad_cam",
         "GradCam++": "grad_cam_plus_plus",
-        "Saliency": "saliance_map",
+        "Saliency": "salience_map",
         "Activation Maximation": "activation_maximation",
     }
     combinations = get_algo_combinations(possible_algos)
     args = parse_args(combinations)
     main(args, vis_to_function, device)
-
