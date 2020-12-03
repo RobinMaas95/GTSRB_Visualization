@@ -1,6 +1,7 @@
 from functools import partial
 from pathlib import Path
 
+import PIL
 import pytorch_lightning as pl
 import torch
 import torchvision
@@ -164,7 +165,24 @@ class LitModel(pl.LightningModule):
         train_set_normal = torchvision.datasets.ImageFolder(
             root=str(Path(self.train_dataset).joinpath("train")),
             transform=transforms.Compose(
-                [transforms.ToTensor(), transforms.Normalize(self.mean, self.std),]
+                [
+                    # transforms.Grayscale(),
+                    transforms.RandomApply(
+                        [
+                            transforms.RandomAffine(
+                                0, translate=(0.2, 0.2), resample=PIL.Image.BICUBIC
+                            ),
+                            transforms.RandomAffine(
+                                0, shear=20, resample=PIL.Image.BICUBIC
+                            ),
+                            transforms.RandomAffine(
+                                0, scale=(0.8, 1.2), resample=PIL.Image.BICUBIC
+                            ),
+                        ]
+                    ),
+                    transforms.ToTensor(),
+                    transforms.Normalize(self.mean, self.std),
+                ]
             ),
         )
 
@@ -178,7 +196,24 @@ class LitModel(pl.LightningModule):
         val_set_normal = torchvision.datasets.ImageFolder(
             root=str(Path(self.train_dataset).joinpath("val")),
             transform=transforms.Compose(
-                [transforms.ToTensor(), transforms.Normalize(self.mean, self.std),]
+                [
+                    # transforms.Grayscale(),
+                    transforms.RandomApply(
+                        [
+                            transforms.RandomAffine(
+                                0, translate=(0.2, 0.2), resample=PIL.Image.BICUBIC
+                            ),
+                            transforms.RandomAffine(
+                                0, shear=20, resample=PIL.Image.BICUBIC
+                            ),
+                            transforms.RandomAffine(
+                                0, scale=(0.8, 1.2), resample=PIL.Image.BICUBIC
+                            ),
+                        ]
+                    ),
+                    transforms.ToTensor(),
+                    transforms.Normalize(self.mean, self.std),
+                ]
             ),
         )
 
