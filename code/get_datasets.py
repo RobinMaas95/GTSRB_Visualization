@@ -28,7 +28,7 @@ ch.setFormatter(formatter)
 log.addHandler(ch)
 
 # Constants
-WORKING_DIR = r"../data"
+WORKING_DIR = r"/content/data"
 FINAL_TRAINING_URL = r"https://sid.erda.dk/public/archives/daaeac0d7ce1152aea9b61d9f1e19370/GTSRB_Final_Training_Images.zip"
 FINAL_TEST_URL = r"https://sid.erda.dk/public/archives/daaeac0d7ce1152aea9b61d9f1e19370/GTSRB_Final_Test_Images.zip"
 FINAL_TEST_GT_URL = r"https://sid.erda.dk/public/archives/daaeac0d7ce1152aea9b61d9f1e19370/GTSRB_Final_Test_GT.zip"
@@ -220,7 +220,11 @@ def crop_images(annotations: list, output_path: str, crop: bool, size: int) -> N
 
         # Make sure that the folder exists, but the file not
         Path(target_folder).mkdir(parents=True, exist_ok=True)
-        Path(target_path).unlink(missing_ok=True)
+        try:
+          Path(target_path).unlink()
+        except FileNotFoundError:
+          # With Python 3.8 we could use "missing_ok", but atm colab uses 3.6
+          pass
 
         # Crop image and rescale it to size*size
         # Using LANCZOS for resampling, it has the worst performance but the best quality of all filters
