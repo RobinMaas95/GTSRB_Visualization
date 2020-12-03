@@ -1,3 +1,4 @@
+import argparse
 import logging
 import os
 import shutil
@@ -144,9 +145,9 @@ def setup_train_env(hparams, mean, std, train_val_folder, test_folder):
     trainer = pl.Trainer(
         gpus=1,
         fast_dev_run=False,
-        max_epochs=1,
+        max_epochs=100,
         progress_bar_refresh_rate=200,
-        default_root_dir="/content/drive/My Drive/Master Thesis/checkpoints",
+        default_root_dir="/content/checkpoints",
         profiler=False,
         callbacks=[checkpoint_callback, early_stop_callback],
     )
@@ -154,27 +155,58 @@ def setup_train_env(hparams, mean, std, train_val_folder, test_folder):
     return litmodel, trainer
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Train and test model")
+    parser.add_argument(
+        "--train_dataset",
+        type=str,
+        default=None,
+        required=True,
+        help="Path to train dataset",
+    )
+    parser.add_argument(
+        "--test_dataset",
+        type=str,
+        default=None,
+        required=True,
+        help="Path to test dataset",
+    )
+    parser.add_argument(
+        "-s",
+        "--seed",
+        type=int,
+        default=2020,
+        required=False,
+        help="Seed for train/validation split (default: 2020)",
+    )
+    parser.add_argument(
+        "-r",
+        "--ratio",
+        type=str,
+        default="(0.7, 0.3)",
+        required=False,
+        help='Ratio for train/validation split, must be in tuple format! (default: "(0.7, 0.3)")',
+    )
+
+    args = parser.parse_args()
+    return args
+
+
 if __name__ == "__main__":
     os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
-    base_folder = "/content"
-    path_train = "/content/drive/My Drive/Master Thesis/rework/original_training.zip"
-    path_test = "/content/drive/My Drive/Master Thesis/rework/original_test.zip"
+    args = parse_args()
+    train_val_folder = Path(args.train_dataset).joinpath("train_val")
 
-    train_folder = Path(base_folder).joinpath(Path(path_train).stem)
-    test_folder = Path(base_folder).joinpath(Path(path_test).stem)
-    train_val_folder = train_folder.joinpath("train_val")
-
-    # Setup files
-    unzip_files(path_train, path_test, train_folder, test_folder)
-    split_dataset(train_folder, train_val_folder, seed=2020, ratio=(0.7, 0.3))
+    # Split train dataset into train and validation
+    split_dataset(args.train_dataset, train_val_folder, seed=2020, ratio=(0.7, 0.3))
 
     # Calculate mean
     mean, std = cal_dir_stat(str(Path(train_val_folder).joinpath("train")), "ppm")
 
     # Setup model/trainer
     litmodel, trainer = setup_train_env(
-        hparams, mean, std, train_val_folder, test_folder
+        hparams, mean, std, train_val_folder, args.test_dataset
     )
 
     # Train/test
