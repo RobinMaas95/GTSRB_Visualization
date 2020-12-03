@@ -115,19 +115,6 @@ def unzip_files(path_training, path_test, train_folder, test_folder):
         log.info("Test dataset is already unzipped")
 
 
-def move_notebook_files(notebook_folder):
-    if not Path(Path(notebook_folder).parent).joinpath("model.py").is_file():
-        file_names = os.listdir(notebook_folder)
-        for file_name in file_names:
-            shutil.move(
-                os.path.join(notebook_folder, file_name), Path(notebook_folder).parent
-            )
-
-        shutil.rmtree(notebook_folder)
-    else:
-        log.info("Notebooks are also already moved")
-
-
 def split_dataset(train_dataset, target, seed, ratio):
     # Call the split_folders module (https://github.com/jfilter/split-folders)
     if not target.is_dir():
