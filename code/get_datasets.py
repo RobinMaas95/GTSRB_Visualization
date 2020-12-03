@@ -86,9 +86,9 @@ def download_data(train_url: str, test_url: str, test_gt_url: str, target_path: 
             _download_url(test_url, test_dataset)
 
         log.info("Download test_GT dataset...")
-        test_get_dataset = str(target_path.joinpath("GTSRB_Final_Test_GT.zip"))
-        if not Path(test_get_dataset).is_file():
-            _download_url(test_gt_url, test_get_dataset)
+        test_gt_dataset = str(target_path.joinpath("GTSRB_Final_Test_GT.zip"))
+        if not Path(test_gt_dataset).is_file():
+            _download_url(test_gt_url, test_gt_dataset)
 
         # Unzip files
         log.info("Unzip training images")
@@ -98,7 +98,7 @@ def download_data(train_url: str, test_url: str, test_gt_url: str, target_path: 
         with zipfile.ZipFile(test_dataset, "r") as zip_ref:
             zip_ref.extractall(str(target_path))
         log.info("Unzip test GT")
-        with zipfile.ZipFile(test_get_dataset, "r") as zip_ref:
+        with zipfile.ZipFile(test_gt_dataset, "r") as zip_ref:
             zip_ref.extractall(str(target_path))
 
 
@@ -314,7 +314,7 @@ def parse_args():
         dest="url_train_gt",
         metavar="URL Train GT",
         required=False,
-        default=FINAL_TRAINING_URL,
+        default=FINAL_TEST_GT_URL,
         type=str,
         help="URL to Test GT Dataset",
     )
