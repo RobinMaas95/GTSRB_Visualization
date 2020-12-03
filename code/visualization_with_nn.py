@@ -32,8 +32,8 @@ from torchvision.utils import save_image
 from tqdm import tqdm
 
 from model import LitModel
-# from nn_interpretability.interpretation.am.general_am import ActivationMaximization
-# from nn_interpretability.interpretation.saliency_map.saliency_map import SaliencyMap
+from nn_interpretability.interpretation.am.general_am import ActivationMaximization
+from nn_interpretability.interpretation.saliency_map.saliency_map import SaliencyMap
 from SmoothGradCAMplusplus.cam import GradCAM, SmoothGradCAMpp
 from SmoothGradCAMplusplus.utils.visualize import reverse_normalize, visualize
 
