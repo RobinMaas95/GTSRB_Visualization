@@ -5,6 +5,7 @@ import shutil
 import warnings
 import zipfile
 from pathlib import Path
+from typing import Tuple
 
 import cv2
 import numpy as np
@@ -68,25 +69,17 @@ def cal_dir_stat(root: str, filetype: str) -> tuple:
     return rgb_mean, rgb_std
 
 
-def __unzip_file(filepath, target="/content/"):
-    filepath = Path(filepath)
-    with zipfile.ZipFile(filepath, "r") as zip_ref:
-        for file in zip_ref.namelist():
-            if file.startswith(filepath.stem + "/"):
-                zip_ref.extract(file, target)
-
-    # Remove annoying child folder...
-    file_names = os.listdir(Path(target).joinpath(filepath.stem))
-
-    for file_name in file_names:
-        shutil.move(
-            os.path.join(Path(target).joinpath(filepath.stem), file_name), target
-        )
-
-    shutil.rmtree(Path(target).joinpath(filepath.stem))
-
-
 def _unzip_file(filepath, target="/content/"):
+    """
+    Internal method for unzipping of files
+
+    Parameters
+    ----------
+    filepath : str
+        Path to zip file
+    target : str, optional
+        Target directory, by default "/content/"
+    """
     filepath = Path(filepath)
 
     with zipfile.ZipFile(filepath, "r") as zip_ref:
@@ -103,7 +96,24 @@ def _unzip_file(filepath, target="/content/"):
                         shutil.copyfileobj(zf, f)
 
 
-def unzip_files(path_training, path_test, train_folder, test_folder):
+def unzip_files(
+    path_training: str, path_test: str, train_folder: str, test_folder: str
+) -> None:
+    """
+    Unzips train and test dataset zip files
+
+    Parameters
+    ----------
+    path_training : str
+        Path to training zip file
+    path_test : str
+        Path to test zip file
+    train_folder : str
+        Target folder of train dataset (used to validate, if zip was already unzipped)
+    test_folder : str
+        Target folder of test dataset (used to validate, if zip was already unzipped)
+    """
+
     if not train_folder.is_dir():
         log.info("Unzip train...")
         _unzip_file(path_training)
@@ -116,7 +126,21 @@ def unzip_files(path_training, path_test, train_folder, test_folder):
         log.info("Test dataset is already unzipped")
 
 
-def split_dataset(train_dataset, target, seed, ratio):
+def split_dataset(train_dataset: str, target: str, seed: int, ratio: str) -> None:
+    """
+    Splits train dataset into train and validation folder
+
+    Parameters
+    ----------
+    train_dataset : str
+        Path to folder with trainigs dataset
+    target : str
+        Path to parent path of the new train/val folder
+    seed : int
+        Seed for random selection of files
+    ratio : str
+        Ratio of the train/val split. Must be in for of a tuple!
+    """
     # Call the split_folders module (https://github.com/jfilter/split-folders)
     if not target.is_dir():
         log.info("Create train/val split")
@@ -125,16 +149,65 @@ def split_dataset(train_dataset, target, seed, ratio):
         log.info("Train/val split already exists")
 
 
-def train(litmodel, trainer):
+def train(litmodel: LitModel, trainer: pl.Trainer) -> LitModel:
+    """
+    Trains model
+
+    Parameters
+    ----------
+    litmodel : model.LitModel
+        Model to train
+    trainer : pytorch_lightning.trainer.trainer.Trainer
+        Trainer
+
+    Returns
+    -------
+    model.LitModel
+        Trained model
+    """
+
     trainer.fit(litmodel)
     return litmodel
 
 
-def test(litmodel, trainer):
+def test(litmodel: LitModel, trainer: pl.Trainer) -> None:
+    """
+    Runs test on trained model and logs result
+
+    Parameters
+    ----------
+    litmodel : model.LitModel
+        Trained model
+    trainer : pytorch_lightning.trainer.trainer.Trainer
+        Trainer
+    """
     log.info("Test Result: " + str(trainer.test(litmodel)))
 
 
-def setup_train_env(hparams, mean, std, train_val_folder, test_folder):
+def setup_train_env(
+    hparams: dict, mean: list, std: list, train_val_folder: str, test_folder: str
+) -> Tuple[LitModel, pl.Trainer]:
+    """
+    Creates model and trainer with the passed settings
+
+    Parameters
+    ----------
+    hparams : dict
+        Settings for model configuration(dropout rate, learning rate, momentum, optimizer, activationfunctions for features and classifier and stn parameters)
+    mean : list
+        Mean values for all three channels in train dataset
+    std : list
+        Standardderivation values for all three channels in train dataset
+    train_val_folder : str
+        Path to train/val dataset folder
+    test_folder : str
+        Path to test folder
+
+    Returns
+    -------
+    model.LitModel, pytorch_lightning.trainer.trainer.Trainer
+        Model and trainer ready for training
+    """
     checkpoint_callback = ModelCheckpoint(
         monitor="avg_val_acc", save_last=True, save_top_k=1, mode="max"
     )
@@ -156,6 +229,14 @@ def setup_train_env(hparams, mean, std, train_val_folder, test_folder):
 
 
 def parse_args():
+    """
+    Parse shell arguments
+
+    Returns
+    -------
+    argsparse.Namespace
+        Namespace with all arguments
+    """
     parser = argparse.ArgumentParser(description="Train and test model")
     parser.add_argument(
         "--train_dataset",
