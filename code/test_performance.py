@@ -158,7 +158,13 @@ class TestPerformance:
             Datasets
         """
         # Set up model and trainer
-        model = LitModel.load_from_checkpoint(checkpoint)
+        model = LitModel.load_from_checkpoint(
+            checkpoint,
+            mean=args.mean,
+            std=args.std,
+            train_dataset=None,
+            test_dataset=None,
+        )
         use_gpu = True if torch.cuda.is_available() else False
         if use_gpu:
             trainer = Trainer(gpus=1)
@@ -206,6 +212,7 @@ def parse_args():
         type=str,
         help="File with stored state of the trained model",
     )
+
     parser.add_argument(
         "--method_names",
         dest="method_names",
