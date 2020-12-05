@@ -198,7 +198,6 @@ ipython_config.py
 
 /notebooks
 /data_used
-/checkpoints
 /results
 /data
 /data_old
