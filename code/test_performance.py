@@ -26,16 +26,8 @@ class TestPerformance:
     def __init__(
         self, mean: list = None, std: list = None, filetype_list: list = None
     ) -> None:
-        self.mean = (
-            [0.3230196501152847, 0.2914298715735955, 0.3120634663785096]
-            if not mean
-            else mean
-        )
-        self.std = (
-            [0.27684945906380265, 0.2601342238418913, 0.273270542538354]
-            if not std
-            else std
-        )
+        self.mean = mean
+        self.std = std
         self.FILETYPE_LIST = (
             ["pdf", "png", "svg"] if not filetype_list else filetype_list
         )
@@ -49,7 +41,7 @@ class TestPerformance:
         set_y_axis_range: bool = False,
     ) -> None:
         """
-        Creates images in all passed fomrats and stores datafram as csv file
+        Creates images in all passed formats and stores dataframe as csv file
 
         Parameters
         ----------
@@ -230,19 +222,17 @@ def parse_args():
         help="List (seperated with Space) with name of datasets. Datasets must be in the same folder as this file. If a name ends with '_' the skript will use all folders with a prefix to that name",
     )
 
-    parser.add_argument(
-        "--mean", dest="mean", nargs="+",
-    )
+    parser.add_argument("--mean", dest="mean", nargs="+", required=True)
 
-    parser.add_argument("--std", dest="std", default=None, nargs="+")
+    parser.add_argument("--std", dest="std", default=None, nargs="+", required=True)
 
     args = parser.parse_args()
+    args.mean = None if args.mean is None else [float(i) for i in args.mean]
+    args.std = None if args.std is None else [float(i) for i in args.std]
     return args
 
 
 if __name__ == "__main__":
     args = parse_args()
-    mean = None if args.mean is None else [float(i) for i in args.mean]
-    std = None if args.std is None else [float(i) for i in args.std]
-    runner = TestPerformance(mean=mean, std=std)
+    runner = TestPerformance(mean=args.mean, std=args.std)
     runner.main(args.checkpoint, args.method_names, args.datasets)
