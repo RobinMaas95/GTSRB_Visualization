@@ -284,6 +284,8 @@ if __name__ == "__main__":
 
     # Calculate mean
     mean, std = cal_dir_stat(str(Path(train_val_folder).joinpath("train")), "ppm")
+    log.info("Mean: " + str(mean))
+    log.info("Std: " + str(std))
 
     # Setup model/trainer
     litmodel, trainer = setup_train_env(
