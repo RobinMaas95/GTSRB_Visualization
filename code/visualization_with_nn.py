@@ -17,6 +17,7 @@ import sys
 import warnings
 from pathlib import Path
 from itertools import combinations
+
 CURRENT = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(str(Path(CURRENT).joinpath("pytorch_cnn_visualizations", "src")))
 
@@ -101,23 +102,9 @@ def parse_args(vis_list):
         help="Visualization algorithems that should be used (default: all). Choose from: "
         + str(vis_list),
     )
-    parser.add_argument(
-        "--mean",
-        metavar="Mean",
-        dest="mean",
-        type=list,
-        default=[0.3121227400108073, 0.28787920805165235, 0.2983359377199073],
-        help="Mean Values for normalization (List with three values)",
-    )
+    parser.add_argument("--mean", dest="mean", nargs="+", required=True)
 
-    parser.add_argument(
-        "--std",
-        metavar="std",
-        dest="std",
-        type=list,
-        default=[0.2788638916341836, 0.2672319741766035, 0.2756277781233763],
-        help="Std Values for normalization (List with three values)",
-    )
+    parser.add_argument("--std", dest="std", default=None, nargs="+", required=True)
 
     args = parser.parse_args()
 
@@ -129,7 +116,11 @@ def parse_args(vis_list):
 
     # Set vis
     args.vis = args.vis.split("/")
-    # dest.mkdir(parents=True, exist_ok=True)
+
+    # Cast mean/std to floag
+    args.mean = [float(i) for i in args.mean]
+    args.std = [float(i) for i in args.std]
+
     return args
 
 
@@ -313,7 +304,6 @@ def salience_map(
         "heatmap_saliency", org_image.parents[0].name, org_image.name
     )
     image_dest.parents[0].mkdir(parents=True, exist_ok=True)
-    # heatmap = rgb2gray(heatmap)
 
     plt.imsave(str(image_dest), endpoint.cpu().squeeze(0), cmap="gray")
 
