@@ -11,6 +11,7 @@ from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from torchvision import transforms as transforms
 
+
 class Stn(nn.Module):
     def __init__(self, setup_dict):
         super(Stn, self).__init__()
@@ -160,7 +161,6 @@ class LitModel(pl.LightningModule):
             root=str(Path(self.train_dataset).joinpath("train")),
             transform=transforms.Compose(
                 [
-                    # transforms.Grayscale(),
                     transforms.RandomApply(
                         [
                             transforms.RandomAffine(
@@ -190,24 +190,7 @@ class LitModel(pl.LightningModule):
         val_set_normal = torchvision.datasets.ImageFolder(
             root=str(Path(self.train_dataset).joinpath("val")),
             transform=transforms.Compose(
-                [
-                    # transforms.Grayscale(),
-                    transforms.RandomApply(
-                        [
-                            transforms.RandomAffine(
-                                0, translate=(0.2, 0.2), resample=PIL.Image.BICUBIC
-                            ),
-                            transforms.RandomAffine(
-                                0, shear=20, resample=PIL.Image.BICUBIC
-                            ),
-                            transforms.RandomAffine(
-                                0, scale=(0.8, 1.2), resample=PIL.Image.BICUBIC
-                            ),
-                        ]
-                    ),
-                    transforms.ToTensor(),
-                    transforms.Normalize(self.mean, self.std),
-                ]
+                [transforms.ToTensor(), transforms.Normalize(self.mean, self.std),]
             ),
         )
 
@@ -220,7 +203,6 @@ class LitModel(pl.LightningModule):
             root=str(self.test_dataset),
             transform=transforms.Compose(
                 [
-                    # transforms.Grayscale(),
                     transforms.Resize((48, 48)),
                     transforms.ToTensor(),
                     transforms.Normalize(self.mean, self.std),
