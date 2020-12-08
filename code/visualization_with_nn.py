@@ -15,8 +15,8 @@ import argparse
 import os
 import sys
 import warnings
-from pathlib import Path
 from itertools import combinations
+from pathlib import Path
 
 CURRENT = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(str(Path(CURRENT).joinpath("pytorch_cnn_visualizations", "src")))
@@ -24,19 +24,20 @@ sys.path.append(str(Path(CURRENT).joinpath("pytorch_cnn_visualizations", "src"))
 import numpy as np
 import torch
 from matplotlib import pyplot as plt
+from model import LitModel
+from nn_interpretability.interpretation.am.general_am import \
+    ActivationMaximization
+from nn_interpretability.interpretation.saliency_map.saliency_map import \
+    SaliencyMap
 from PIL import Image
 from skimage.color import rgb2gray
 from skimage.io import imsave
+from SmoothGradCAMplusplus.cam import GradCAM, SmoothGradCAMpp
+from SmoothGradCAMplusplus.utils.visualize import reverse_normalize, visualize
 from torch.nn import functional as F
 from torchvision import transforms
 from torchvision.utils import save_image
 from tqdm import tqdm
-
-from model import LitModel
-from nn_interpretability.interpretation.am.general_am import ActivationMaximization
-from nn_interpretability.interpretation.saliency_map.saliency_map import SaliencyMap
-from SmoothGradCAMplusplus.cam import GradCAM, SmoothGradCAMpp
-from SmoothGradCAMplusplus.utils.visualize import reverse_normalize, visualize
 
 
 def parse_args(vis_list):
@@ -342,7 +343,7 @@ def grad_cam(
     prep_img = prep_img.to(device)
 
     # Create SmoothGradCAM
-    wrapped_model = GradCAM(model, model.features[14])
+    wrapped_model = GradCAM(model, model.features[13])
 
     cam, _ = wrapped_model(prep_img)
     img = reverse_normalize(prep_img)
@@ -406,7 +407,7 @@ def grad_cam_plus_plus(
 
     # Create SmoothGradCAMpp
     wrapped_model = SmoothGradCAMpp(
-        model, model.features[14], n_samples=25, stdev_spread=0.15
+        model, model.features[13], n_samples=25, stdev_spread=0.15
     )
 
     cam, _ = wrapped_model(prep_img)
@@ -545,6 +546,6 @@ if __name__ == "__main__":
         "Saliency": "salience_map",
         "Activation Maximation": "activation_maximation",
     }
-    combinations = get_algo_combinations(possible_algos)
-    args = parse_args(combinations)
+    algo_combinations = get_algo_combinations(possible_algos)
+    args = parse_args(algo_combinations)
     main(args, vis_to_function, device)

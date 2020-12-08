@@ -1,4 +1,3 @@
-from functools import partial
 from pathlib import Path
 
 import PIL
@@ -11,9 +10,6 @@ from torch import optim as optim
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from torchvision import transforms as transforms
-
-from deconvolution.models.deconv import FastDeconv
-
 
 class Stn(nn.Module):
     def __init__(self, setup_dict):
@@ -71,10 +67,8 @@ class LitModel(pl.LightningModule):
             else nn.ReLU()
         )
 
-        deconv = partial(FastDeconv)
         self.features = nn.Sequential(
             # Hidden 1
-            deconv(3, 3, kernel_size=3, stride=1, padding=1),
             Stn(self.hparams.stn_parameter[0]),
             nn.Conv2d(3, 200, (7, 7), stride=1, padding=2),
             self.activation_function_features,
