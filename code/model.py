@@ -111,7 +111,10 @@ class LitModel(pl.LightningModule):
                 self.parameters(),
                 lr=self.hparams.learning_rate,
                 momentum=self.hparams.momentum,
+                nesterov=True
             )
+        print("\n")
+        print(optimizer)
         return optimizer
 
     def training_step(self, batch, batch_idx):
@@ -134,7 +137,10 @@ class LitModel(pl.LightningModule):
     def validation_epoch_end(self, outputs):
         avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()
         avg_val_acc = torch.stack([x["val_acc"] for x in outputs]).mean()
-
+        print("\n")
+        print("Val loss: ", avg_loss)
+        print("val acc: ", avg_val_acc)
+        print("\n")
         tensorboard_logs = {"val_loss": avg_loss, "avg_val_acc": avg_val_acc}
         return {"val_loss": avg_loss, "progress_bar": tensorboard_logs}
 
@@ -253,7 +259,7 @@ stn_params = [stn1_params, stn2_params, stn3_params]
 hparams = {
     "dropout_rate": 0.45,
     "learning_rate": 0.001,
-    "momentum": 0,
+    "momentum": 0.9,
     "optimizer": "SGD",
     "activation_function_features": "RELU",
     "activation_function_classifier": "RELU",
