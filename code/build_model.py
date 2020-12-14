@@ -218,7 +218,7 @@ def setup_train_env(
     trainer = pl.Trainer(
         gpus=1,
         fast_dev_run=False,
-        max_epochs=15,
+        max_epochs=100,
         progress_bar_refresh_rate=200,
         default_root_dir="/content/checkpoints",
         profiler=False,
