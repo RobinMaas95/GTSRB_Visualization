@@ -11,6 +11,7 @@ import cv2
 import numpy as np
 import pytorch_lightning as pl
 import splitfolders
+import torch
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from tqdm import tqdm
 
@@ -33,14 +34,14 @@ log.addHandler(ch)
 def cal_dir_stat(root: str, filetype: str) -> tuple:
     """
     Calculates the mean and standard deviation per channel for all images in the
-    passed dateset. Do not calculate the statistics on the whole dataset, 
+    passed dateset. Do not calculate the statistics on the whole dataset,
     as per here http://cs231n.github.io/neural-networks-2/#datapre.
-    
+
     root:
         Path to dataset
     filetype:
         Type of images in dataset, e.g. ppm or jpg
-        
+
     """
     log.info("Calculate mean/std values")
     CHANNEL_NUM = 3
@@ -185,13 +186,21 @@ def test(litmodel: LitModel, trainer: pl.Trainer) -> None:
 
 
 def setup_train_env(
-    hparams: dict, mean: list, std: list, train_val_folder: str, test_folder: str
+    destination: str,
+    hparams: dict,
+    mean: list,
+    std: list,
+    train_val_folder: str,
+    test_folder: str,
+    epochs: str,
 ) -> Tuple[LitModel, pl.Trainer]:
     """
     Creates model and trainer with the passed settings
 
     Parameters
     ----------
+    destination :
+        Location where checkpoints will be stored
     hparams : dict
         Settings for model configuration(dropout rate, learning rate, momentum, optimizer, activationfunctions for features and classifier and stn parameters)
     mean : list
@@ -202,6 +211,8 @@ def setup_train_env(
         Path to train/val dataset folder
     test_folder : str
         Path to test folder
+    epochs : str
+        Maximum number of epochs
 
     Returns
     -------
@@ -215,12 +226,13 @@ def setup_train_env(
         monitor="avg_val_acc", min_delta=0.00, patience=5, verbose=False, mode="max"
     )
     litmodel = LitModel(hparams, mean, std, train_val_folder, test_folder)
+    num_gpus = 1 if torch.cuda.is_available() else 0
     trainer = pl.Trainer(
-        gpus=1,
+        gpus=num_gpus,
         fast_dev_run=False,
-        max_epochs=100,
+        max_epochs=epochs,
         progress_bar_refresh_rate=200,
-        default_root_dir="/content/checkpoints",
+        default_root_dir=destination,
         profiler=False,
         callbacks=[checkpoint_callback, early_stop_callback],
     )
@@ -253,6 +265,13 @@ def parse_args():
         help="Path to test dataset",
     )
     parser.add_argument(
+        "--destination",
+        type=str,
+        default=None,
+        required=True,
+        help="Path where the checkpoints should be stored",
+    )
+    parser.add_argument(
         "-s",
         "--seed",
         type=int,
@@ -267,6 +286,22 @@ def parse_args():
         default="(0.7, 0.3)",
         required=False,
         help='Ratio for train/validation split, must be in tuple format! (default: "(0.7, 0.3)")',
+    )
+    parser.add_argument(
+        "-e",
+        "--epochs",
+        type=int,
+        default=15,
+        required=False,
+        help="Max number of epoches(default: 15)",
+    )
+    parser.add_argument(
+        "-d",
+        "--dropout_rate",
+        type=float,
+        default=0.45,
+        required=False,
+        help="Dropout range (default: 0.45)",
     )
 
     args = parser.parse_args()
@@ -288,8 +323,15 @@ if __name__ == "__main__":
     log.info("Std: " + str(std))
 
     # Setup model/trainer
+    hparams["dropout_rate"] = args.dropout_rate
     litmodel, trainer = setup_train_env(
-        hparams, mean, std, train_val_folder, args.test_dataset
+        args.destination,
+        hparams,
+        mean,
+        std,
+        train_val_folder,
+        args.test_dataset,
+        args.epochs,
     )
 
     # Train/test
