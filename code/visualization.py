@@ -519,7 +519,7 @@ def main(args, vis_to_function, device):
                     device,
                 )
 
-            else:
+            else:                
                 for image in files:
                     globals()[vis_to_function.get(algo)](
                         model,
