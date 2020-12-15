@@ -325,13 +325,13 @@ if __name__ == "__main__":
     # Setup model/trainer
     hparams["dropout_rate"] = args.dropout_rate
     litmodel, trainer = setup_train_env(
-        args.destination,
-        hparams,
-        mean,
-        std,
-        train_val_folder,
-        args.test_dataset,
-        args.epochs,
+        destination = args.destination,
+        hparams=hparams,
+        mean=mean,
+        std=std,
+        train_val_folder=train_val_folder,
+        test_folder=args.test_dataset,
+        epochs=args.epochs,
     )
 
     # Train/test
