@@ -138,7 +138,7 @@ class TestPerformance:
 
         return result_dict
 
-    def main(self, checkpoint: str, method_names: list, datasets: list):
+    def main(self, checkpoint: str, method_names: list, datasets: list, force_cpu:bool):
         """
         Parameters
         ----------
@@ -148,6 +148,8 @@ class TestPerformance:
             Method that should be used
         datasets : list
             Datasets
+        force_cpu:
+            Should cpu be used, even if a GPU is detected?
         """
         # Set up model and trainer
         model = LitModel.load_from_checkpoint(
@@ -157,7 +159,12 @@ class TestPerformance:
             train_dataset=None,
             test_dataset=None,
         )
-        use_gpu = True if torch.cuda.is_available() else False
+        
+        if force_cpu:
+            use_gpu = False
+        else:
+            use_gpu = True if torch.cuda.is_available() else False
+            
         if use_gpu:
             trainer = Trainer(gpus=1)
         else:
@@ -221,6 +228,7 @@ def parse_args():
         required=True,
         help="List (seperated with Space) with name of datasets. Datasets must be in the same folder as this file. If a name ends with '_' the skript will use all folders with a prefix to that name",
     )
+    parser.add_argument("--force_cpu", action='store_true')
 
     parser.add_argument("--mean", dest="mean", nargs="+", required=True)
 
@@ -235,4 +243,4 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     runner = TestPerformance(mean=args.mean, std=args.std)
-    runner.main(args.checkpoint, args.method_names, args.datasets)
+    runner.main(args.checkpoint, args.method_names, args.datasets, args.force_cpu)
