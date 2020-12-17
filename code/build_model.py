@@ -304,6 +304,15 @@ def parse_args():
         help="Dropout range (default: 0.45)",
     )
 
+    parser.add_argument(
+        "-m",
+        "--momentum",
+        type=float,
+        default=0.9,
+        required=False,
+        help="Momentum (default: 0.9)",
+    )
+
     args = parser.parse_args()
     return args
 
@@ -324,6 +333,7 @@ if __name__ == "__main__":
 
     # Setup model/trainer
     hparams["dropout_rate"] = args.dropout_rate
+    hparams["momentum"] = args.momentum
     litmodel, trainer = setup_train_env(
         destination = args.destination,
         hparams=hparams,
