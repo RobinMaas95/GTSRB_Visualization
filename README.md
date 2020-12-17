@@ -8,7 +8,7 @@
 4. Select your Fork in the `Repository` dropdown
 5. Select `code/run_test_performance.ipynb`
 6. Run cells
-7. Due to the size, the `perspective` and `rotated` dataset could not be made available via GitHub. The files are hosted on `gofile.io` and will be downloaded within the notebook. If the links no longer work, you will need to generate the datasets yourself. See section `Instructions for reproduction`/`Generate perspective un rotated` 	
+7. Due to the size, the `perspective` and `rotated` dataset could not be made available via GitHub. The files are hosted on `OneDrive` and will be downloaded within the notebook. If the links no longer work, you will need to generate the datasets yourself. See section `Instructions for reproduction`/`Generate perspective un rotated` 	
 
 ### Using local environment
 1. Clone this repository
@@ -20,17 +20,17 @@
 3. Unzip checkpoints (necessary because checkpoints exceed GitHub file size limit)
 	- Paths may need to be adjusted 
 	- Unix:
-		- `cat /GTSRB_Visualization/checkpoints/splitted_trained_model.zip.00* > trained_model.zip`
-		- `cat /GTSRB_Visualization/checkpoints/splitted_trained_model_org.zip.00* > trained_model_org.zip`
+		- `cat /checkpoints/splitted_trained_model.zip.00* > trained_model.zip`
+		- `cat /checkpoints/splitted_trained_model_org.zip.00* > trained_model_org.zip`
 		- `unzip -qq trained_model.zip`
 		- `unzip -qq trained_model_org.zip`
 	- Windows
-		- `type /GTSRB_Visualization/checkpoints/splitted_trained_model.zip.00* > trained_model.zip`
-		- `type /GTSRB_Visualization/checkpoints/splitted_trained_model_org.zip.00* > trained_model_org.zip`
+		- `type /checkpoints/splitted_trained_model.zip.001 /checkpoints/splitted_trained_model.zip.002 /checkpoints/splitted_trained_model.zip.003 > trained_model.zip`
+		- `type /checkpoints/splitted_trained_model_org.zip.001 /checkpoints/splitted_trained_model_org.zip.002 /checkpoints/splitted_trained_model_org.zip.003 > trained_model_org.zip`
 		- Unzip `trained_model.zip` and `trained_model_org.zip` with an archive manager of your choice
-4. Due to the size, the perspective and rotated dataset could not be made available via GitHub. The files are hosted on gofile.io but must be downloaded using the following links and then unpacked. If the links no longer work, you will need to generate the datasets yourself. See section `Instructions for reproduction`/`Generate perspective un rotated` 
-	- [Perspective - TODO](placeholder.io)
-	- [Rotated - TODO](placeholder.io)
+4. Due to the size, the perspective and rotated dataset could not be made available via GitHub. The files are hosted on `OneDrive` but must be downloaded using the following links and then unpacked. If the links no longer work, you will need to generate the datasets yourself. See section `Instructions for reproduction`/`Generate perspective un rotated` 
+	- [Perspective](https://onedrive.live.com/download?cid=A75A55F06E327965&resid=A75A55F06E327965%212612&authkey=AJMj_aXD29yyN-8)
+	- [Rotated](https://onedrive.live.com/download?cid=A75A55F06E327965&resid=A75A55F06E327965%212613&authkey=AMvt8Bhj5RLHo9g)
 
 4. Start `jupyter lab` and navigate to this repository. Open `code/run_test_performance.ipynb`
 5. Run cells 
