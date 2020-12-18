@@ -194,9 +194,3 @@ ipython_config.py
 #   git rm -r .ipynb_checkpoints/
 
 # End of https://www.toptal.com/developers/gitignore/api/python,vscode,macos
-
-
-/notebooks
-/data_used
-/results
-/data_old
