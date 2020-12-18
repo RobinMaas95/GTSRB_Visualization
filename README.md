@@ -1,5 +1,5 @@
 # GTSRB_Visualization
-Analysis of visualization methods for relevant areas within images for the CNN. Used the [GTSRB](https://benchmark.ini.rub.de/) dataset as well as Activation Maximization[1], Saliency Map[2], GradCam[3], and Gradcam++[4] methods.
+Analysis of visualization methods for relevant areas within images for a trained CNN. Used the [GTSRB](https://benchmark.ini.rub.de/) dataset as well as Activation Maximization[1], Saliency Map[2], GradCam[3], and Gradcam++[4] methods.
 Code and evaluations were developed as part of my master's thesis.
 
 Code from the following repositories was used within this work:
