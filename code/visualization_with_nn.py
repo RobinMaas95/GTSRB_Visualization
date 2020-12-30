@@ -25,10 +25,8 @@ import numpy as np
 import torch
 from matplotlib import pyplot as plt
 from model import LitModel
-from nn_interpretability.interpretation.am.general_am import \
-    ActivationMaximization
-from nn_interpretability.interpretation.saliency_map.saliency_map import \
-    SaliencyMap
+from nn_interpretability.interpretation.am.general_am import ActivationMaximization
+from nn_interpretability.interpretation.saliency_map.saliency_map import SaliencyMap
 from PIL import Image
 from skimage.color import rgb2gray
 from skimage.io import imsave
@@ -306,7 +304,14 @@ def salience_map(
     )
     image_dest.parents[0].mkdir(parents=True, exist_ok=True)
 
-    plt.imsave(str(image_dest), endpoint.cpu().squeeze(0), cmap="gray")
+    heatmap = 255 * endpoint.squeeze()
+    heatmap = heatmap.cpu()
+
+    heatmap = rgb2gray(heatmap)
+    grayscale_uint8 = heatmap.astype(np.uint8)
+    imsave(str(image_dest), grayscale_uint8)
+
+    # plt.imsave(str(image_dest), endpoint.cpu().squeeze(0), cmap="jet")
 
 
 def grad_cam(
